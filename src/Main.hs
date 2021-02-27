@@ -1,6 +1,7 @@
 module Main where
 
-import Data.Char
+import Data.List (sort)
+import Data.Char (toUpper)
 import Proteomics.Peptide 
 
 main :: IO ()
@@ -9,8 +10,6 @@ main = do
   s <- map toUpper <$> getLine
   let Just peptide = mkPeptide "" s
   print peptide
-  print $ chargeState 1 peptide
-  print $ genFragments peptide
-  
+  print $ sort $ map (charged 1) $ fragment peptide -- >>= fragmentMods  
+
   pure ()
-  

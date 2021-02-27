@@ -1,15 +1,24 @@
 module Proteomics.Peptide 
-  ( Residue(..)
+  ( Matter (..)
+  , Peptide (..)
   , mkPeptide
-  , monoisotopic
-  , chargeState
+  , Mz (..)
   , FragmentIon (..)
-  , genFragments ) where
-import Data.List
+  , fragment 
+  , FragmentMod (..)
+  , fragmentMods ) where
+
+import Data.List ( mapAccumL )
 
 -- | Typeclass representing things that have an atomic mass
 class Matter a where
   monoisotopic :: a -> Double
+
+  add :: (Matter b) => a -> b -> Double
+  add a b = monoisotopic a + monoisotopic b
+
+  charged :: Integer -> a -> Mz
+  charged ch = let c = fromInteger ch in (\x -> Mz ((x + c * monoisotopic Proton) / c) c) . monoisotopic
 
 data Peptide = Peptide
   { accession :: String
@@ -17,40 +26,67 @@ data Peptide = Peptide
   , neutral :: Double
   } deriving (Show, Eq)
 
+instance Matter Peptide where
+  monoisotopic Peptide {neutral=n} = n
+
+data Mz = Mz 
+  { mass   :: Double 
+  , charge :: Double
+  } deriving (Show, Eq)
+
+instance Ord Mz where
+  compare a b = compare (mass a) (mass b)
+
+
+instance Matter Mz where
+  monoisotopic Mz {mass=m, charge=c} = (m * c) - (c * monoisotopic Proton)
+
 mkPeptide :: String -> String -> Maybe Peptide
 mkPeptide acc s = do
   aa <- mapM fromChar s
   let neutral = sum (map monoisotopic aa) + monoisotopic Water
   return $ Peptide acc aa neutral
 
-chargeState :: Integer -> Peptide -> Double
-chargeState ch = (\x -> (x + fromInteger ch * monoisotopic Proton) / fromInteger ch) . neutral
-
+-- | Is storing the associated data as Mz the best way?
 data FragmentIon
-  = FragmentB Double
-  | FragmentY Double
+  = FragmentB Mz
+  | FragmentY Mz
   deriving (Show, Eq)
 
 data FragmentMod
-  = WaterLoss (FragmentIon)
-  | AmmoniaLoss (FragmentIon)
-  | NoMod (FragmentIon)
+  = MinusWater FragmentIon
+  | MinusAmmonia FragmentIon 
+  | Base FragmentIon
+  deriving (Show, Eq)
+ 
+instance Matter FragmentIon where
+  monoisotopic (FragmentB d) = monoisotopic d
+  monoisotopic (FragmentY d) = monoisotopic d 
+
+
+instance Matter FragmentMod where 
+  monoisotopic (MinusWater f)   = monoisotopic f - monoisotopic Water
+  monoisotopic (MinusAmmonia f) = monoisotopic f - monoisotopic Ammonia
+  monoisotopic (Base f) = monoisotopic f 
 
 -- | Generate a list of b and y fragment ions from an amino acid sequence
-genFragments :: Peptide -> [FragmentIon]
-genFragments p = concat' $ snd $ mapAccumL (\a x -> go (neutral p) a (monoisotopic x)) 0 (residues p)
+fragment :: Peptide -> [FragmentIon]
+fragment p = finish $ mapAccumL (\a x -> go a (monoisotopic x)) 0 (residues p)
   where
-    -- concat' :: [(a, a)] -> [a]
-    concat' = uncurry (<>) . unzip
+    finish = uncurry (<>) . unzip . snd
     proton = monoisotopic Proton
+    mass   = neutral p
     -- generate b and y ions in one traverse over a list
-    go m acc res = (acc + res, (FragmentB $ acc + res + proton, FragmentY $ m - acc + proton))
+    go acc res = (acc + res, (FragmentB $ Mz (acc + res + proton) 1, FragmentY $ Mz (mass - acc + proton) 1))
 
+fragmentMods :: FragmentIon -> [FragmentMod]
+fragmentMods f = map ($f) [MinusWater, MinusAmmonia, Base]
 
 -- | Static modifications to amino acids
 data Modification
   = Oxidation -- ^Applies to methionine
   | Carbamidomethyl  -- ^Applies to cysteine
+  deriving (Show, Eq)
 
 instance Matter Modification where
   monoisotopic Oxidation = monoisotopic Oxygen
@@ -121,10 +157,14 @@ instance Matter Element where
   monoisotopic Sulfur   = 31.972071
   monoisotopic Proton   =  1.007276    
 
+
+
 -- | The monoisotopic mass of water
-data Water = Water
-instance Matter Water where
-  monoisotopic _ = 2 * monoisotopic Hydrogen + monoisotopic Oxygen
+data Compounds = Water | Ammonia
+
+instance Matter Compounds where
+  monoisotopic Water   = 2 * monoisotopic Hydrogen + monoisotopic Oxygen
+  monoisotopic Ammonia = 3 * monoisotopic Hydrogen + monoisotopic Oxygen
 
 fromChar :: Char -> Maybe Residue
 fromChar x =  case x of
