@@ -1,4 +1,4 @@
-module Proteomics where
+module Proteomics.Shotgun where
 
 -- | Typeclass representing things that have an atomic mass
 class Matter a where

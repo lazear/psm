@@ -1,10 +1,10 @@
-module Proteomics.Residue
+module Proteomics.Shotgun.Residue
     ( StaticMod (..)
     , Residue (..)
-    , fromChar
-    , applyStaticMod ) where 
+    , fromChar) where 
 
-import Proteomics (Matter (..))
+import Proteomics.Shotgun (Matter (..))
+
 -- | Static modifications to amino acids
 data StaticMod
   = Carbamidomethyl  -- ^Applies to cysteine
@@ -18,10 +18,7 @@ instance Matter StaticMod where
   monoisotopic Carbamidomethyl = monoisotopic Gly
   -- Carbamidomethyl modification has same chemical composition as glycine
 
-applyStaticMod :: StaticMod -> Residue -> Residue
-applyStaticMod Carbamidomethyl Cys = Mod Cys Carbamidomethyl
-applyStaticMod TMT16 Lys = Mod Lys TMT16
-applyStaticMod _ r = r
+
 
 -- | Amino acid residues
 data Residue

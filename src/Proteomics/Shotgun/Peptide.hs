@@ -1,4 +1,4 @@
-module Proteomics.Peptide 
+module Proteomics.Shotgun.Peptide 
   ( Peptide (..)
   , mkPeptide
   , applyStaticMods
@@ -9,10 +9,10 @@ module Proteomics.Peptide
   , fragmentMods ) where
 
 import Data.List ( mapAccumL )
-import Proteomics ( Matter(..), Mz (..), Molecules (..), Element (..))
 import Data.Maybe (mapMaybe)
-import Proteomics.Residue ( Residue (..), StaticMod (..), fromChar )
 import Data.Traversable (mapAccumR)
+import Proteomics.Spectrometry ( Matter(..), Mz (..), Molecules (..), Element (..))
+import Proteomics.Spectrometry.Residue ( Residue (..), StaticMod (..), fromChar )
 
 data Peptide = Peptide
   { accession :: !String

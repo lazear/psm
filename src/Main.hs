@@ -2,9 +2,9 @@ module Main where
 
 import Data.List (sort)
 import Data.Char (toUpper)
-import Proteomics
-import Proteomics.Peptide 
-import Proteomics.Residue ( StaticMod(..) ) 
+import Proteomics.Shotgun
+import Proteomics.Shotgun.Peptide 
+import Proteomics.Shotgun.Residue ( StaticMod(..) ) 
 
 main :: IO ()
 main = do

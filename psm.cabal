@@ -19,9 +19,9 @@ extra-source-files:  CHANGELOG.md
 executable psm
   main-is:             Main.hs
   other-modules:
-    Proteomics
-    Proteomics.Peptide
-    Proteomics.Residue
+    Proteomics.Shotgun
+    Proteomics.Shotgun.Peptide
+    Proteomics.Shotgun.Residue
   -- other-extensions:
   build-depends:       base >=4.14 && <4.15
   hs-source-dirs:
