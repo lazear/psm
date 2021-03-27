@@ -11,8 +11,8 @@ module Proteomics.Shotgun.Peptide
 import Data.List ( mapAccumL )
 import Data.Maybe (mapMaybe)
 import Data.Traversable (mapAccumR)
-import Proteomics.Spectrometry ( Matter(..), Mz (..), Molecules (..), Element (..))
-import Proteomics.Spectrometry.Residue ( Residue (..), StaticMod (..), fromChar )
+import Proteomics.Shotgun ( Matter(..), Mz (..), Molecules (..), Element (..))
+import Proteomics.Shotgun.Residue ( Residue (..), StaticMod (..), fromChar )
 
 data Peptide = Peptide
   { accession :: !String

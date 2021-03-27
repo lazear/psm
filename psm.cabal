@@ -19,11 +19,17 @@ extra-source-files:  CHANGELOG.md
 executable psm
   main-is:             Main.hs
   other-modules:
+    Proteomics.Parse.Fasta
     Proteomics.Shotgun
     Proteomics.Shotgun.Peptide
     Proteomics.Shotgun.Residue
   -- other-extensions:
   build-depends:       base >=4.14 && <4.15
+                     , text
+                     , containers
+                     , attoparsec
+                     , transformers
+
   hs-source-dirs:
     src
   default-language:    Haskell2010
